@@ -76,7 +76,6 @@ app.listen(process.env.PORT || 8080, () => {
 app.post('/signUpData', (req, res) => {
     if (req.body.username.length && req.body.password.length) {
         db.collection('users').find({ username: req.body.username }).toArray((err, user) => {
-            console.log(user)
             if (user.length) {
                 res.json('This username already exists')
             } else {
