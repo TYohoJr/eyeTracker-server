@@ -83,6 +83,13 @@ app.post('/signUpData', (req, res) => {
                     db.collection('users').save({
                         username: req.body.username,
                         password: hash,
+                        staticDots: [],
+                        pursuits: [],
+                        saccades: [],
+                        combination: [],
+                        randomSaccades: [],
+                        antiSaccades: [],
+                        opk: [],
                     }, (err, result) => {
                         if (err) {
                             res.json("Failed")
@@ -99,3 +106,87 @@ app.post('/signUpData', (req, res) => {
         res.json('Error: username or password can\'t be blank')
     }
 });
+
+app.post("/userLogIn", (req, res) => {
+    db.collection("users").find({ username: req.body.username }).toArray((err, user) => {
+        if (!user.length) {
+            res.json({
+                message: `Login failed!`
+            });
+        } else if (err) {
+            res.json({
+                message: "Login failed!"
+            });
+        } else {
+            // Un-hash the password to verify login
+            bcrypt.compare(req.body.password, user[0].password, function (err, resolve) {
+                if (resolve === true) {
+                    // Upon successful login, assigns the user a token
+                    var token = jwt.sign(req.body.username, ('Secret'), {
+                    });
+                    res.json({
+                        message: "Login successful!",
+                        myToken: token,
+                        user: user[0],
+                        item: user
+                    });
+                    console.log(`Sign in successful from ${req.body.username}`)
+                } else if (resolve === false) {
+                    res.json({
+                        message: "Login failed!",
+                    })
+                }
+            });
+        }
+    })
+});
+
+app.post("/saveStaticDotsExerciseOptions", verifyToken, (req, res) => {
+    console.log(req.body)
+    db.collection('users').update(
+        { username: req.body.username },
+        {
+            $set:
+            {
+                staticDots: [req.body.centerDotColor, req.body.extraDotColor]
+            }
+        }
+    )
+    db.collection('users').find({ username: req.body.username }).toArray((err, user) => {
+        if (err) {
+            res.json({
+                message: err
+            })
+        } else {
+            res.json({
+                message: "Exercise saved successfully",
+                user: user[0]
+            })
+        }
+    })
+})
+
+app.post("/saveAntiSaccadesExerciseOptions", verifyToken, (req, res) => {
+    console.log(req.body)
+    db.collection('users').update(
+        { username: req.body.username },
+        {
+            $set:
+            {
+                antiSaccades: [req.body.centerDotColor, req.body.trueExtraDotColor, req.body.extraDotColor, req.body.dotSpeed, req.body.cycles, req.body.goNoGo, req.body.goNoGoDotColor]
+            }
+        }
+    )
+    db.collection('users').find({ username: req.body.username }).toArray((err, user) => {
+        if (err) {
+            res.json({
+                message: err
+            })
+        } else {
+            res.json({
+                message: "Exercise saved successfully",
+                user: user[0]
+            })
+        }
+    })
+})
