@@ -142,7 +142,6 @@ app.post("/userLogIn", (req, res) => {
 });
 
 app.post("/saveStaticDotsExerciseOptions", verifyToken, (req, res) => {
-    console.log(req.body)
     db.collection('users').update(
         { username: req.body.username },
         {
@@ -167,7 +166,6 @@ app.post("/saveStaticDotsExerciseOptions", verifyToken, (req, res) => {
 })
 
 app.post("/saveAntiSaccadesExerciseOptions", verifyToken, (req, res) => {
-    console.log(req.body)
     db.collection('users').update(
         { username: req.body.username },
         {
