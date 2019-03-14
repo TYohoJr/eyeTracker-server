@@ -15,7 +15,6 @@ app.use(express.static(path.join(__dirname, "build")));
 app.use(bodyParser.json({ type: 'application/json' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// const url = `mongodb://localhost:27017`
 const url = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ds111441.mlab.com:11441/eye-tracker`
 const dbName = 'eye-tracker';
 const client = new MongoClient(url, { useNewUrlParser: true });
@@ -24,11 +23,8 @@ var db;
 
 client.connect(function (err) {
     assert.equal(null, err);
-    console.log('Connected successfully to server');
-
     db = client.db(dbName);
-
-    // client.close();
+    console.log('Connected successfully to server');
 })
 
 // Middleware function to check if the user has a valid token stored locally
@@ -48,15 +44,6 @@ function verifyToken(req, res, next) {
         res.send("No token")
     }
 }
-
-// Only has the server listening if it can successfully connect to the database
-// MongoClient.connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ds111441.mlab.com:11441/eye-tracker`, (err, client) => {
-//     if (err) return console.log(err)
-//     db = client.db("eye-tracker") // whatever your database name is
-//     app.listen(process.env.PORT || 8080, () => {
-//         console.log("listening on 8080")
-//     })
-// })
 
 app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
@@ -142,7 +129,7 @@ app.post("/userLogIn", (req, res) => {
 });
 
 app.post("/saveStaticDotsExerciseOptions", verifyToken, (req, res) => {
-    db.collection('users').update(
+    db.collection('users').updateOne(
         { username: req.body.username },
         {
             $set:
@@ -163,10 +150,10 @@ app.post("/saveStaticDotsExerciseOptions", verifyToken, (req, res) => {
             })
         }
     })
-})
+});
 
 app.post("/saveAntiSaccadesExerciseOptions", verifyToken, (req, res) => {
-    db.collection('users').update(
+    db.collection('users').updateOne(
         { username: req.body.username },
         {
             $set:
@@ -187,4 +174,124 @@ app.post("/saveAntiSaccadesExerciseOptions", verifyToken, (req, res) => {
             })
         }
     })
-})
+});
+
+app.post("/savePursuitsExerciseOptions", verifyToken, (req, res) => {
+    db.collection('users').updateOne(
+        { username: req.body.username },
+        {
+            $set:
+            {
+                pursuits: [req.body.direction, req.body.dotColor, req.body.dotSpeed, req.body.cycles]
+            }
+        }
+    )
+    db.collection('users').find({ username: req.body.username }).toArray((err, user) => {
+        if (err) {
+            res.json({
+                message: err
+            })
+        } else {
+            res.json({
+                message: "Exercise saved successfully",
+                user: user[0]
+            })
+        }
+    })
+});
+
+app.post("/saveSaccadesExerciseOptions", verifyToken, (req, res) => {
+    db.collection('users').updateOne(
+        { username: req.body.username },
+        {
+            $set:
+            {
+                saccades: [req.body.direction, req.body.dotColor, req.body.dotSpeed, req.body.cycles, req.body.steps]
+            }
+        }
+    )
+    db.collection('users').find({ username: req.body.username }).toArray((err, user) => {
+        if (err) {
+            res.json({
+                message: err
+            })
+        } else {
+            res.json({
+                message: "Exercise saved successfully",
+                user: user[0]
+            })
+        }
+    })
+});
+
+app.post("/saveCombinationExerciseOptions", verifyToken, (req, res) => {
+    db.collection('users').updateOne(
+        { username: req.body.username },
+        {
+            $set:
+            {
+                combination: [req.body.dotColor, req.body.masterArray, req.body.exerciseTypeCheck]
+            }
+        }
+    )
+    db.collection('users').find({ username: req.body.username }).toArray((err, user) => {
+        if (err) {
+            res.json({
+                message: err
+            })
+        } else {
+            res.json({
+                message: "Exercise saved successfully",
+                user: user[0]
+            })
+        }
+    })
+});
+
+app.post("/saveRandomSaccadesExerciseOptions", verifyToken, (req, res) => {
+    db.collection('users').updateOne(
+        { username: req.body.username },
+        {
+            $set:
+            {
+                randomSaccades: [req.body.centerDotColor, req.body.extraDotColor, req.body.dotSpeed, req.body.dotNumber]
+            }
+        }
+    )
+    db.collection('users').find({ username: req.body.username }).toArray((err, user) => {
+        if (err) {
+            res.json({
+                message: err
+            })
+        } else {
+            res.json({
+                message: "Exercise saved successfully",
+                user: user[0]
+            })
+        }
+    })
+});
+
+app.post("/saveOPKExerciseOptions", verifyToken, (req, res) => {
+    db.collection('users').updateOne(
+        { username: req.body.username },
+        {
+            $set:
+            {
+                opk: [req.body.stripeColor, req.body.backgroundColor, req.body.scrollSpeed]
+            }
+        }
+    )
+    db.collection('users').find({ username: req.body.username }).toArray((err, user) => {
+        if (err) {
+            res.json({
+                message: err
+            })
+        } else {
+            res.json({
+                message: "Exercise saved successfully",
+                user: user[0]
+            })
+        }
+    })
+});
