@@ -77,6 +77,7 @@ app.post('/signUpData', (req, res) => {
                         randomSaccades: [],
                         antiSaccades: [],
                         opk: [],
+                        dateCreated: req.body.dateCreated
                     }, (err, result) => {
                         if (err) {
                             res.json("Failed")
@@ -92,6 +93,39 @@ app.post('/signUpData', (req, res) => {
     } else {
         res.json('Error: username or password can\'t be blank')
     }
+});
+
+app.post('/changePassword', (req, res) => {
+    db.collection('users').find({ username: req.body.username }).toArray((err, user) => {
+        if (user.length) {
+            bcrypt.compare(req.body.oldPassword, user[0].password, function (err, resolve) {
+                if (resolve) {
+                    bcrypt.hash(req.body.newPassword1, saltRounds, function (err, hash) {
+                        db.collection('users').updateOne(
+                            { username: req.body.username },
+                            {
+                                $set:
+                                {
+                                    password: hash
+                                }
+                            }
+                        )
+                        if (err) {
+                            res.json("Failed")
+                            console.log(err);
+                        } else {
+                            res.json('Successfully updated password')
+                            console.log(`password updated for ${req.body.username}`);
+                        }
+                    });
+                } else {
+                    res.json("Wrong password")
+                }
+            });
+        } else {
+            res.json('Error: Please log out and back in')
+        }
+    })
 });
 
 app.post("/userLogIn", (req, res) => {
